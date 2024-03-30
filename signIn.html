@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio de Sesión</title>
+    <link rel="stylesheet" href="./style/signIn.css">
+    <!-- Agrega SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+    <div class="login-container">
+        <form class="login-form" onsubmit="handleLogin(event)">
+            <label class="login-label" for="email">Email:</label>
+            <input id="email" value="" oninput="setEmail(event.target.value)"
+                placeholder="Enter your email" class="login-input" type="email" autocomplete="off" required />
+            <label class="login-label" for="password">Password:</label>
+            <input id="password" value="" oninput="setPassword(event.target.value)" placeholder="Enter your password"
+                class="login-input" type="password" autocomplete="off" required />
+            <button class="login-button" type="submit">Sign In</button>
+            <a href="./signUp.html" class="signup-button">If haven't a account, Sign Up</a>
+        </form>
+        <p class="error-message" id="error"></p>
+    </div>
+
+    <script>
+        function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                fetch('http://localhost/GardensApi-PHP/auth.php/signin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Correo electrónico o contraseña inválidos');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        const token = data.token;
+                        console.log('Inicio de sesión exitoso'); // Muestra el mensaje de inicio de sesión exitoso en consola
+                        // Establece la cookie con expiración al final de la sesión (al cerrar el navegador)
+                        //document.cookie = `x-access-token=${token}; path=/; expires=0`;
+                        // Muestra mensaje de éxito usando SweetAlert2
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Inicio de sesión exitoso',
+                            showConfirmButton: false,
+                            timer: 1500
+                        }).then(() => {
+                            window.location.href = 'index.html'; // Redirige al usuario al archivo index.html
+                        });
+                    })
+                    .catch(error => {
+                        // Muestra mensaje de error usando SweetAlert2
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error de inicio de sesión',
+                            text: error.message || 'Error de inicio de sesión'
+                        });
+                    });
+            } catch (error) {
+                console.error('Error de red:', error);
+                setError('Error de red: No se pudo conectar al servidor');
+            }
+        }
+
+        function setEmail(value) {
+            document.getElementById('email').value = value;
+        }
+
+        function setPassword(value) {
+            document.getElementById('password').value = value;
+        }
+
+        function setError(message) {
+            document.getElementById('error').textContent = message;
+        }
+    </script>
+</body>
+
+</html>

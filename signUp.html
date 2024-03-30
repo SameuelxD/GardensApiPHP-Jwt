@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro</title>
+    <link rel="stylesheet" href="./style/signUp.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+</head>
+
+<body>
+    <div class="signup-container">
+        <form class="signup-form" onsubmit="handleSignUp(event)">
+            <label class="signup-label" for="username">Username:</label>
+            <input id="username" value="" onchange="setUsername(event.target.value)" placeholder="Enter your username"
+                class="signup-input" type="text" autocomplete="off" required />
+            <label class="signup-label" for="email">Email:</label>
+            <input id="email" value="" onchange="setEmail(event.target.value)" placeholder="Enter your email"
+                class="signup-input" type="email" autocomplete="off" required />
+            <label class="signup-label" for="password">Password:</label>
+            <input id="password" value="" onchange="setPassword(event.target.value)" placeholder="Enter your password"
+                class="signup-input" type="password" autocomplete="off" required />
+            <label class="signup-label" for="role">Role:</label>
+            <select id="role" class="signup-input" onchange="setRole(event.target.value)" required>
+                <option value="">Select a role</option>
+                <option value="1">User</option>
+                <option value="2">Moderator</option>
+                <option value="3">Admin</option>
+            </select>
+            <button class="signup-button" type="submit">Sign Up</button>
+            <a href="./signIn.html" class="signin-redirect-button">Already have an account? Sign In</a>
+        </form>
+        <p class="success-message" id="registrationSuccessful"></p>
+    </div>
+
+    <script>
+        async function handleSignUp(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const rol_id = document.getElementById('role').value;
+
+            // Verificar si hay datos faltantes
+            if (!username || !email || !password || !rol_id) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Incomplete Data',
+                    text: 'Please fill in all fields.',
+                    timer: 3000,
+                    timerProgressBar: true,
+                    showConfirmButton: true
+                });
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost/GardensApi-PHP/auth.php/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, email, password, rol_id }) // Envía los datos en formato JSON
+                });
+
+                const responseData = await response.json(); // Convertir la respuesta a JSON directamente
+
+                if (!response.ok) {
+                    throw new Error(responseData.error || 'Error al registrar el usuario');
+                }
+
+                // Si la verificación es exitosa, procedemos con el registro
+                setRegistrationSuccessful(true);
+                clearFields(); // Limpiar campos de entrada
+                showSuccessMessage(); // Mostrar mensaje de éxito
+
+                console.log(responseData); // Mostrar la respuesta del servidor en la consola
+
+            } catch (error) {
+                console.error('Error:', error.message);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'An error occurred.',
+                    timer: 3000,
+                    timerProgressBar: true,
+                    showConfirmButton: true
+                });
+            }
+        }
+
+        function setRegistrationSuccessful(success) {
+            var messageElement = document.getElementById('registrationSuccessful');
+            messageElement.textContent = success ? 'Registration Successful!' : '';
+        }
+
+        function setUsername(value) {
+            if (value.length > 0) {
+                document.getElementById('username').value = value;
+            }
+        }
+
+        function setEmail(value) {
+            if (value.length > 0) {
+                document.getElementById('email').value = value;
+            }
+        }
+
+        function setPassword(value) {
+            if (value.length > 0) {
+                document.getElementById('password').value = value;
+            }
+        }
+
+        function setRole(value) {
+            if (value.length > 0) {
+                document.getElementById('role').value = value;
+            }
+        }
+
+        function clearFields() {
+            document.getElementById('username').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('role').selectedIndex = 0;
+        }
+
+        function showSuccessMessage() {
+            Swal.fire({
+                icon: 'success',
+                title: 'Registration Successful!',
+                text: 'You have been successfully registered.',
+                timer: 3000,
+                timerProgressBar: true,
+                showConfirmButton: true
+            }).then(() => {
+                // Redirige al usuario a la página de inicio de sesión después de mostrar el mensaje de éxito
+                window.location.href = './signIn.html';
+            });
+        }
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta API REST</title>
+    <link rel="stylesheet" href="./style/style.css">
+    <link rel="stylesheet" href="bootstrap-5.3.3-dist/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Consultas de API REST</h1>
+        <select id="consulta">
+            <option value="Seleccione">Seleccione</option>
+            <option value="PedidosIncumplidos">PedidosIncumplidos</option>
+            <option value="ClientesSinPagos">ClientesSinPagos</option>
+            <option value="Oficinas1">Oficinas1</option>
+            <option value="ProductosMasVendidos">ProductosMasVendidos</option>
+            <option value="VentasTotales1">VentasTotales1</option>
+            <option value="ProductoMasVendido">ProductoMasVendido</option>
+            <option value="ClientesPedidos">ClientesPedidos</option>
+            <option value="ListaClientes">ListaClientes</option>
+            <option value="EmpleadosSinClientes">EmpleadosSinClientes</option>
+            <option value="ProductosSinPedidos">ProductosSinPedidos</option>
+            <option value="Pagos2008Paypal">Pagos2008Paypal</option>
+            <option value="FormasPagos">FormasPagos</option>
+            <option value="ClientesPagos">ClientesPagos</option>
+            <option value="EmpleadoJefeyJefe">EmpleadoJefeyJefe</option>
+            <option value="PedidosEstados">PedidosEstados</option>
+            <option value="ClientesPedidosIncumplidos">ClientesPedidosIncumplidos</option>
+            <option value="ClientesProductosGamas">ClientesProductosGamas</option>
+        </select>
+        <button class="btn_queries" onclick="realizarConsulta()">Realizar Consulta</button>
+
+        <div id="resultado" class="mt-3">
+            <!-- Contenido de resultado inicial -->
+            <p>Selecciona una consulta y haz clic en "Realizar Consulta".</p>
+        </div>
+
+        <!-- Tabla HTML -->
+        <table id="tablaResultado" class="table table-dark mt-5">
+            <thead>
+                <tr id="tableHeader"></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <script src="bootstrap-5.3.3-dist/js/bootstrap.min.js"></script>
+    <script>
+        function realizarConsulta() {
+            const opcion = document.getElementById('consulta').value;
+            const resultadoContainer = document.getElementById('resultado');
+            const tbody = document.querySelector('#tablaResultado tbody');
+            const headerRow = document.querySelector('#tableHeader');
+
+            // Limpiar el contenido anterior de resultados y la tabla
+            resultadoContainer.innerHTML = '<p>Realizando consulta...</p>';
+            tbody.innerHTML = '';
+            headerRow.innerHTML = '';
+
+            fetch(`http://localhost/GardensApi-PHP/controller.php/${opcion}`)
+                .then(response => {
+                    // Verificar el código de estado HTTP
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    // Leer la respuesta como JSON
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Datos recibidos del servidor:', data);
+                    // Limpiar el contenido anterior de resultados y la tabla
+                    tbody.innerHTML = '';
+                    headerRow.innerHTML = '';
+                    // Mostrar los resultados
+                    mostrarResultado(data);
+                })
+                .catch(error => {
+                    console.error('Error al realizar la consulta:', error.message);
+                    // Limpiar el contenido anterior de resultados y la tabla
+                    tbody.innerHTML = '';
+                    headerRow.innerHTML = '';
+                    // Mostrar mensaje de error en el contenedor de resultados
+                    mostrarError(error.message);
+                });
+        }
+
+
+
+
+
+        function mostrarResultado(data) {
+            const tbody = document.querySelector('#tablaResultado tbody');
+            const headerRow = document.querySelector('#tableHeader');
+
+            // Limpiar el contenido anterior de la tabla
+            tbody.innerHTML = '';
+            headerRow.innerHTML = '';
+
+            // Crear las celdas de encabezado de la tabla
+            Object.keys(data[0]).forEach(key => {
+                const th = document.createElement('th');
+                th.textContent = key;
+                headerRow.appendChild(th);
+            });
+
+            // Iterar sobre los datos y crear las filas y celdas correspondientes
+            data.forEach(item => {
+                const row = tbody.insertRow();
+                Object.values(item).forEach(value => {
+                    const cell = row.insertCell();
+                    cell.textContent = value;
+                });
+            });
+
+            // Mostrar el resultado en el contenedor #resultado
+            const resultadoContainer = document.getElementById('resultado');
+            resultadoContainer.innerHTML = '<p>Resultados de la consulta:</p>';
+        }
+
+        function mostrarError(errorMessage) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: errorMessage
+            });
+            const resultadoContainer = document.getElementById('resultado');
+            resultadoContainer.innerHTML = `<p>Error: ${errorMessage}</p>`;
+        }
+    </script>
+</body>
+
+</html>
